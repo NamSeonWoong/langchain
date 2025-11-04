@@ -2,7 +2,7 @@
 질의응답 체인 - RAG를 활용한 QA 시스템
 """
 from typing import Dict, Any
-from langchain.chains import RetrievalQA
+from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 from models.llm_setup import get_llm
 from rag.retriever import document_retriever
@@ -25,14 +25,19 @@ class QAChainManager:
     
     def __init__(self):
         """초기화"""
-        self.llm = get_llm()
-        self.retriever = document_retriever.get_retriever()
-        
-        # 프롬프트 설정
+        self.llm = None
+        self.retriever = None
         self.prompt = PromptTemplate(
             template=RAG_PROMPT_TEMPLATE,
             input_variables=["context", "question"]
         )
+    
+    def _ensure_initialized(self):
+        """필요 시 LLM과 retriever 초기화"""
+        if self.llm is None:
+            self.llm = get_llm()
+        if self.retriever is None:
+            self.retriever = document_retriever.get_retriever()
     
     def create_qa_chain(self) -> RetrievalQA:
         """
@@ -41,6 +46,7 @@ class QAChainManager:
         Returns:
             RetrievalQA: 질의응답 체인
         """
+        self._ensure_initialized()
         qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
@@ -91,6 +97,7 @@ class QAChainManager:
         Returns:
             str: 답변
         """
+        self._ensure_initialized()
         # 관련 문서 검색
         docs = document_retriever.retrieve_documents(question)
         

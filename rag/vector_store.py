@@ -20,12 +20,19 @@ class VectorStoreManager:
         Args:
             embeddings: 임베딩 모델 (기본값: Ollama 임베딩)
         """
-        self.embeddings = embeddings or get_embeddings()
+        self._embeddings = embeddings
         self.persist_directory = settings.VECTOR_STORE_PATH
         self.collection_name = settings.COLLECTION_NAME
         
         # 디렉토리 생성
         os.makedirs(self.persist_directory, exist_ok=True)
+    
+    @property
+    def embeddings(self):
+        """임베딩 모델 lazy loading"""
+        if self._embeddings is None:
+            self._embeddings = get_embeddings()
+        return self._embeddings
     
     def create_vectorstore(self, documents: List[Document]) -> Chroma:
         """

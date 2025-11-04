@@ -78,7 +78,16 @@ async def upload_document(file: UploadFile = File(...)):
             "total_documents": vector_store_manager.get_collection_count()
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"\n{'='*60}")
+        print("문서 업로드 오류 발생!")
+        print(f"{'='*60}")
+        print(error_trace)
+        print(f"{'='*60}\n")
         raise HTTPException(
             status_code=500,
             detail=f"문서 업로드 중 오류 발생: {str(e)}"
